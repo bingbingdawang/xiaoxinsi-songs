@@ -1,0 +1,1344 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Green Room | Music Player</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #121212;
+      color: #ffffff;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    .app {
+      width: min(760px, 92%);
+      margin: 0 auto;
+      padding: 35px 0 150px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 45px;
+    }
+
+    .logo {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #1ed760;
+      color: #121212;
+      font-size: 23px;
+      font-weight: bold;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      margin-top: 5px;
+      color: #a7a7a7;
+      font-size: 12px;
+    }
+
+    .section-title {
+      margin-bottom: 24px;
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    .player-card {
+      padding: 28px;
+      border-radius: 14px;
+      background: #202020;
+    }
+
+    .cover {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      max-width: 330px;
+      aspect-ratio: 1;
+      margin: 0 auto 28px;
+      border-radius: 10px;
+      background: linear-gradient(145deg, #234e38, #111b15 70%);
+      color: #1ed760;
+      font-size: 100px;
+      overflow: hidden;
+    }
+
+    .cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .song-name {
+      overflow-wrap: anywhere;
+      margin: 0 0 8px;
+      font-size: 23px;
+      font-weight: bold;
+    }
+
+    .artist {
+      overflow-wrap: anywhere;
+      color: #b3b3b3;
+      font-size: 14px;
+    }
+
+    .progress-area {
+      margin-top: 28px;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      color: #b3b3b3;
+      font-size: 12px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #1ed760;
+      cursor: pointer;
+    }
+
+    #progress {
+      display: block;
+      margin: 10px 0;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      margin: 24px 0;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+    }
+
+    .play-button {
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: #1ed760;
+      color: #121212;
+      font-size: 25px;
+      transition: transform 0.15s;
+    }
+
+    .play-button:hover {
+      transform: scale(1.06);
+    }
+
+    .secondary-button {
+      background: transparent;
+      color: white;
+      font-size: 24px;
+    }
+
+    .hint {
+      margin-top: 25px;
+      padding: 18px;
+      border: 1px solid #363636;
+      border-radius: 10px;
+      color: #b3b3b3;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .upload-button {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 12px 18px;
+      border-radius: 24px;
+      background: white;
+      color: #121212;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .upload-button:hover {
+      background: #e5e5e5;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-name {
+      margin-top: 12px;
+      overflow-wrap: anywhere;
+      color: #1ed760;
+      font-size: 12px;
+    }
+
+    footer {
+      margin-top: 30px;
+      color: #777777;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 500px) {
+      .app {
+        padding-top: 24px;
+      }
+
+      header {
+        margin-bottom: 32px;
+      }
+
+      .section-title {
+        font-size: 25px;
+      }
+
+      .player-card {
+        padding: 20px 16px;
+      }
+
+      .cover {
+        max-width: 260px;
+      }
+
+      .song-name {
+        font-size: 20px;
+      }
+    }
+    .library {
+  margin-top: 38px;
+}
+
+#libraryStatus {
+  margin-bottom: 14px;
+  color: #a7a7a7;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+#songList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.song-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 15px;
+  border-radius: 9px;
+  background: #202020;
+  color: white;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.song-item:hover {
+  background: #303030;
+}
+
+.song-item.active {
+  background: #263b2d;
+}
+
+.song-item-icon {
+  color: #1ed760;
+  font-size: 22px;
+}
+
+.song-item-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.song-item-name {
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.song-item-subtitle {
+  margin-top: 5px;
+  color: #a7a7a7;
+  font-size: 12px;
+}
+
+.archive-group {
+  margin-top: 14px;
+}
+.archive-group:first-child { margin-top: 0; }
+
+.archive-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 10px 2px 8px;
+  color: #1ed760;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #303030;
+  cursor: pointer;
+}
+.archive-group-title:hover { color: #7cffaa; }
+.archive-group-arrow {
+  display: inline-block;
+  margin-left: 12px;
+  color: #a7a7a7;
+  font-size: 12px;
+  transition: transform 0.18s ease;
+}
+.archive-group-title[aria-expanded="false"] .archive-group-arrow {
+  transform: rotate(-90deg);
+}
+.archive-group-songs[hidden] { display: none; }
+
+.playing-locator-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin: 12px 0;
+}
+.playing-locator[hidden] { display: none; }
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 22px;
+}
+.pagination[hidden] { display: none; }
+.pagination-button {
+  padding: 9px 14px;
+  border: 1px solid #3a3a3a;
+  border-radius: 20px;
+  background: #202020;
+  color: white;
+  font-size: 13px;
+}
+.pagination-button:hover:not(:disabled) { background: #303030; }
+.pagination-button:disabled { opacity: 0.35; cursor: not-allowed; }
+.pagination-info {
+  color: #a7a7a7;
+  font-size: 13px;
+  white-space: nowrap;
+}
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <div class="logo">♫</div>
+      <div>
+        <div class="brand">Green Room</div>
+        <div class="subtitle">YOUR PERSONAL MUSIC SPACE</div>
+      </div>
+    </header>
+
+    <main>
+      <div class="section-title">现在播放</div>
+
+      <section class="player-card">
+        <div class="cover" id="cover">♫</div>
+
+        <div class="song-name" id="songName">还没有选择歌曲</div>
+        <div class="artist" id="artist">选择一首音乐，开始聆听</div>
+
+        <div class="progress-area">
+          <div class="time-row">
+            <span id="currentTime">0:00</span>
+            <span id="duration">0:00</span>
+          </div>
+
+          <input
+            id="progress"
+            type="range"
+            min="0"
+            max="1000"
+            value="0"
+            aria-label="歌曲播放进度"
+          >
+        </div>
+
+        <div class="controls">
+          <button class="secondary-button" id="prevButton"
+            aria-label="上一首">⏮</button>
+
+          <button class="secondary-button" id="restart"
+            aria-label="从头播放">↺</button>
+
+          <button class="play-button" id="playButton"
+            aria-label="播放音乐">▶</button>
+
+          <button class="secondary-button" id="nextButton"
+            aria-label="下一首">⏭</button>
+
+          <button class="secondary-button" id="modeButton"
+            aria-label="播放模式：顺序播放"
+            title="播放模式：顺序播放"
+            >⇄</button>
+        </div>
+
+        <div class="progress-area">
+          <div class="time-row">
+            <span>音量</span>
+            <span id="volumeLabel">80%</span>
+          </div>
+          <input
+            id="volume"
+            type="range"
+            min="0"
+            max="100"
+            value="80"
+            aria-label="音量"
+          >
+        </div>
+
+        <div class="hint">
+          这是你的私人音乐空间。选择电脑中的音频文件，
+          就可以开始播放。
+
+          <br>
+
+          <label class="upload-button" for="fileInput">
+            ＋ 选择音乐文件
+          </label>
+
+          <input
+            id="fileInput"
+            type="file"
+            accept="audio/*"
+            multiple
+          >
+
+          <div class="file-name" id="fileName">
+            支持浏览器能够播放的常见音频格式
+          </div>
+        </div>
+      </section>
+
+      <section class="library">
+        <h2 class="section-title">我的音乐</h2>
+        <div id="libraryStatus">正在加载歌曲列表......</div>
+        <div class="playing-locator-wrap">
+          <button id="playingTrackLocator" class="pagination-button playing-locator" type="button" hidden>定位正在播放</button>
+        </div>
+        <div id="songList"></div>
+        <div id="pagination" class="pagination" aria-label="歌曲列表分页" hidden></div>
+      </section>
+    </main>
+
+    <footer>
+      Made for music, made for you.
+    </footer>
+  </div>
+
+  <audio id="audio" preload="auto"></audio>
+
+  <script>
+    const audio = document.querySelector("#audio");
+    const fileInput = document.querySelector("#fileInput");
+    const playButton = document.querySelector("#playButton");
+    const restartButton = document.querySelector("#restart");
+
+    const prevButton = document.querySelector("#prevButton");
+    const nextButton = document.querySelector("#nextButton");
+    const modeButton = document.querySelector("#modeButton");
+
+    // 三种播放模式：顺序播放、单曲循环、随机播放
+    const playModes = ["order", "single", "shuffle"];
+    const playModeLabels = {
+    order: "顺序播放",
+    single: "单曲循环",
+    shuffle: "随机播放"
+    };
+
+    let currentPlayMode = "order";
+
+    const progress = document.querySelector("#progress");
+    const volume = document.querySelector("#volume");
+
+    const songName = document.querySelector("#songName");
+    const artist = document.querySelector("#artist");
+    const currentTime = document.querySelector("#currentTime");
+    const duration = document.querySelector("#duration");
+    const volumeLabel = document.querySelector("#volumeLabel");
+    const fileName = document.querySelector("#fileName");
+    const cover = document.querySelector("#cover");
+
+    let currentFileUrl = null;
+    let isSeeking = false;
+
+    function formatTime(seconds) {
+      if (!Number.isFinite(seconds)) {
+        return "0:00";
+      }
+
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+
+      return minutes + ":" +
+        String(remainingSeconds).padStart(2, "0");
+    }
+
+    
+    // 播放与暂停
+    playButton.addEventListener("click", function () {
+      if (!audio.src) return;
+
+      if (audio.paused) {
+        audio.play().catch(function (error) {
+          console.error("播放失败：", error);
+        });
+      } else {
+        audio.pause();
+      }
+    });
+
+    modeButton.addEventListener("click", function () {
+  const currentIndex = playModes.indexOf(currentPlayMode);
+  const previousMode = currentPlayMode;
+
+  currentPlayMode = playModes[
+    (currentIndex + 1) % playModes.length
+  ];
+
+  // 切换到随机模式时，重新建立随机队列
+  if (
+    currentPlayMode === "shuffle" &&
+    previousMode !== "shuffle"
+  ) {
+    resetShuffleQueue(activeSongName);
+  }
+
+  const icons = {
+    order: "⇄",
+    single: "🔂",
+    shuffle: "🔀"
+  };
+
+  modeButton.textContent = icons[currentPlayMode];
+  modeButton.title =
+    "播放模式：" + playModeLabels[currentPlayMode];
+
+  modeButton.setAttribute(
+    "aria-label",
+    "播放模式：" + playModeLabels[currentPlayMode]
+  );
+});
+
+    // 上一首
+    prevButton.addEventListener("click", function () {
+      playPreviousSong();
+    });
+
+    // 下一首
+    nextButton.addEventListener("click", function () {
+      playNextSong();
+    });
+
+
+
+    // 播放状态更新
+    audio.addEventListener("play", function () {
+      playButton.textContent = "Ⅱ";
+    });
+
+    audio.addEventListener("pause", function () {
+      playButton.textContent = "▶";
+    });
+
+    // 获取歌曲时长
+    audio.addEventListener("loadedmetadata", function () {
+      duration.textContent = formatTime(audio.duration);
+    });
+
+    // 更新播放进度
+    audio.addEventListener("timeupdate", function () {
+      currentTime.textContent = formatTime(audio.currentTime);
+
+      if (
+        !isSeeking &&
+        Number.isFinite(audio.duration) &&
+        audio.duration > 0
+      ) {
+        progress.value =
+          audio.currentTime / audio.duration * 1000;
+      }
+    });
+
+    // 拖动进度条时预览时间
+    progress.addEventListener("input", function () {
+      isSeeking = true;
+
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        currentTime.textContent = formatTime(
+          Number(progress.value) / 1000 * audio.duration
+        );
+      }
+    });
+
+    // 松开进度条后跳转到指定位置
+    progress.addEventListener("change", function () {
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        audio.currentTime =
+          Number(progress.value) / 1000 * audio.duration;
+      }
+
+      isSeeking = false;
+    });
+
+    // 从头播放当前歌曲
+    restartButton.addEventListener("click", function () {
+      if (!audio.src) return;
+
+      audio.currentTime = 0;
+      audio.play().catch(function (error) {
+        console.error("播放失败：", error);
+      });
+    });
+
+
+    audio.volume = 0.8;
+        // ===== Supabase 音乐库配置 =====
+    const SUPABASE_URL = "https://dsrripfsqiknlnuzcztp.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_AOmcwPjdmmHmTi0shHvtGA_O6tl0dHu";
+    const BUCKET_NAME = "xiaoxinsiaudio";
+
+    const libraryStatus = document.querySelector("#libraryStatus");
+    const songList = document.querySelector("#songList");
+    const pagination = document.querySelector("#pagination");
+    const playingTrackLocator = document.querySelector("#playingTrackLocator");
+
+    const PAGE_SIZE = 20;
+    let currentPage = 1;
+    let displaySongs = [];
+    // 折叠状态按归档组保存，翻页后仍会保留。
+    const collapsedArchiveGroups = new Set();
+    let supabaseSongs = [];
+    let activeSongName = "";
+    let currentSongIndex = -1;
+
+    
+/* ===== 下一首歌曲预加载 ===== */
+const nextAudioPreloader = new Audio();
+nextAudioPreloader.preload = "auto";
+
+let preloadedNextUrl = "";
+
+// 根据实际播放逻辑，确定下一首要预加载的歌曲
+function getNextSongForPreload() {
+  if (displaySongs.length === 0 || currentSongIndex < 0) {
+    return null;
+  }
+
+  // 单曲循环：预加载当前正在播放的歌曲
+  if (currentPlayMode === "single") {
+    return displaySongs.find(
+      song => song.name === activeSongName
+    ) || null;
+  }
+
+  // 随机播放：优先预加载历史记录中的下一首
+  if (currentPlayMode === "shuffle") {
+    if (shuffleHistoryPosition < shuffleHistory.length - 1) {
+      const nextName = shuffleHistory[shuffleHistoryPosition + 1];
+
+      return supabaseSongs.find(
+        song => song.name === nextName
+      ) || null;
+    }
+
+    // 没有历史中的下一首时，使用随机队列
+    if (shuffleUpcoming.length === 0) {
+      refillShuffleUpcoming(activeSongName);
+    }
+
+    return shuffleUpcoming[0] || null;
+  }
+
+  // 顺序播放：必须和 playNextSong() 使用同一个数组
+  const nextIndex =
+    (currentSongIndex + 1) % displaySongs.length;
+
+  return displaySongs[nextIndex];
+}
+
+// 开始预加载下一首
+function preloadNextSong() {
+  const nextSong = getNextSongForPreload();
+
+  if (!nextSong || nextSong.url === audio.currentSrc) {
+    return;
+  }
+
+  // 同一首歌已经开始预加载，就不重复设置
+  if (nextSong.url === preloadedNextUrl) {
+    return;
+  }
+
+  nextAudioPreloader.src = nextSong.url;
+  nextAudioPreloader.load();
+
+  preloadedNextUrl = nextSong.url;
+
+  console.log("正在预加载下一首：", nextSong.title);
+}
+
+// 当前歌曲已有足够数据可以播放后，再准备下一首
+audio.addEventListener("canplay", preloadNextSong);
+
+
+    // ===== 随机播放队列 =====
+let shuffleHistory = [];          // 已播放历史，保存歌曲文件名
+let shuffleHistoryPosition = -1;  // 当前在历史记录中的位置
+let shuffleUpcoming = [];         // 本轮还没播放的随机歌曲
+
+// Fisher-Yates 洗牌算法
+function shuffleArray(items) {
+  const result = [...items];
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
+
+// 生成一轮随机队列
+function refillShuffleUpcoming(excludeSongName = "") {
+  const candidates = supabaseSongs.filter(
+    song => song.name !== excludeSongName
+  );
+
+  shuffleUpcoming = shuffleArray(candidates);
+}
+
+// 重置随机队列，以当前歌曲为起点
+function resetShuffleQueue(startSongName = "") {
+  shuffleHistory = [];
+  shuffleHistoryPosition = -1;
+  shuffleUpcoming = [];
+
+  if (startSongName) {
+    shuffleHistory.push(startSongName);
+    shuffleHistoryPosition = 0;
+  }
+
+  refillShuffleUpcoming(startSongName);
+}
+
+// 从歌曲列表手动选择歌曲时，重新建立随机队列
+function recordManualShuffleSelection(song) {
+  shuffleHistory = [song.name];
+  shuffleHistoryPosition = 0;
+
+  refillShuffleUpcoming(song.name);
+}
+
+    // 获取公开音频文件的 URL
+    function getSongUrl(filePath) {
+      const encodedPath = filePath
+        .split("/")
+        .map(part => encodeURIComponent(part))
+        .join("/");
+
+      return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${encodedPath}`;
+    }
+
+/*    // 从文件名中去掉扩展名
+    function getSongTitle(fileName) {
+      return fileName.split("/").pop().replace(/\.[^.]+$/, "");
+    }
+*/
+
+    // 中文歌曲名称映射表
+    const songTitleMap = {
+      "1.11-xiaoqingge.mp3": "小情歌",
+      "1.11yedediqizhang.mp3": "夜的第七章",
+      "1.18duyiwuer.mp3": "独一无二的你",
+      "1.18fengchuimailang.mp3": "风吹麦浪",
+      "1.25disike.mp3": "别再问我什么是迪斯科",
+      "1.25qingren.mp3": "情人",
+
+      "2.1keainvren.mp3": "可爱女人",
+      "2.1ruguodeshi.mp3": "如果的事",
+      "2.8beiduibeiyongbao.mp3": "背对背拥抱",
+      "2.8fenshoukuaile.mp3": "分手快乐",
+      "2.11gongxifacai.mp3": "恭喜发财",
+      "2.11mianhuatang.mp3": "棉花糖",
+      "2.11yinweiaiqing.mp3": "因为爱情",
+      "2.11zuichudemengxiang.mp3": "最初的梦想",
+      "2.24ai.mp3": "爱",
+      "2.24baixinnian.mp3": "拜新年",
+      "2.24shijiandouqvnale.mp3": "时间都去哪了",
+
+      "3.3nideweixiao.mp3": "你的微笑",
+      "3.15chunfengshili.mp3": "春风十里",
+      "3.15huatiancuo.mp3": "花田错",
+      "3.15jvziqishui.mp3": "橘子汽水",
+      "3.15riluodadao.mp3": "日落大道",
+      "3.22hongmeigui.mp3": "红玫瑰",
+      "3.22yuanzougaofei.mp3": "远走高飞",
+      "3.29manleng.mp3": "慢冷",
+      "3.29shangchunshan.mp3": "上春山",
+
+      "4.3lvxingdeyiyi.mp3": "旅行的意义",
+      "4.3qvyoufengdedifang.mp3": "去有风的地方",
+      "4.3yigerendelvxing.mp3": "一个人的旅行",
+      "4.12kuailelaojia.mp3": "快乐老家",
+      "4.12qidaiai.mp3": "期待爱",
+      "4.19chongai.mp3": "宠爱",
+      "4.19dengnixiake.mp3":"等你下课",
+      "4.26bugai.mp3": "不该",
+      "4.26xiaojiuwo.mp3": "小酒窝",
+      "4.26xingqing.mp3": "星晴",
+
+      "5.10meiguanxi.mp3": "没关系",
+      "5.10xiayutian.mp3": "下雨天",
+      "5.17heianqishi.mp3": "黑暗骑士",
+      "5.17shashou.mp3": "杀手",
+      "5.17waimiandeshijie.mp3": "外面的世界",
+      "5.23mihunji.mp3": "迷魂计",
+      "5.23shiqi.mp3":"十七",
+      "5.23yangguangzhainan.mp3": "阳光宅男",
+
+      /*
+      "": "",
+      "": "",
+      "": "",
+      "": "",
+      "": "",
+      "": "",
+      "":"",
+      "": "",
+      "": "",
+      "": "",
+      */
+      
+    };
+
+    //日期映射
+    const songDateMap = {
+      "1.11-xiaoqingge.mp3": "2026-01-11",
+      "1.11yedediqizhang.mp3": "2026-01-11",
+      "1.18duyiwuer.mp3": "2026-01-18",
+      "1.18fengchuimailang.mp3": "2026-01-18",
+      "1.25disike.mp3": "2026-01-25",
+      "1.25qingren.mp3": "2026-01-25",
+      "2.1keainvren.mp3": "2026-02-01",
+      "2.1ruguodeshi.mp3": "2026-02-01",
+      "2.8beiduibeiyongbao.mp3": "2026-02-08",
+      "2.8fenshoukuaile.mp3": "2026-02-08",
+      "2.11gongxifacai.mp3": "2026-02-11",
+      "2.11mianhuatang.mp3": "2026-02-11",
+      "2.11yinweiaiqing.mp3": "2026-02-11",
+      "2.11zuichudemengxiang.mp3": "2026-02-11",
+      "2.24ai.mp3": "2026-02-24",
+      "2.24baixinnian.mp3": "2026-02-24",
+      "2.24shijiandouqvnale.mp3": "2026-02-24",
+      "2.24qingren.mp3": "2026-02-24",
+      "3.3nideweixiao.mp3": "2026-03-03",
+      "3.15chunfengshili.mp3": "2026-03-15",
+      "3.15huatiancuo.mp3": "2026-03-15",
+      "3.15jvziqishui.mp3": "2026-03-15",
+      "3.15riluodadao.mp3": "2026-03-15",
+      "3.22hongmeigui.mp3": "2026-03-22",
+      "3.22yuanzougaofei.mp3": "2026-03-22",
+      "3.29manleng.mp3": "2026-03-29",
+      "3.29shangchunshan.mp3": "2026-03-29",
+      "4.3lvxingdeyiyi.mp3": "2026-04-03",
+      "4.3qvyoufengdedifang.mp3": "2026-04-03",
+      "4.3yigerendelvxing.mp3": "2026-04-03",
+      "4.12kuailelaojia.mp3": "2026-04-12",
+      "4.12qidaiai.mp3": "2026-04-12",
+      "4.19chongai.mp3": "2026-04-19",
+      "4.19dengnixiake.mp3":"2026-04-19",
+      "4.26bugai.mp3": "2026-04-26",
+      "4.26xiaojiuwo.mp3": "2026-04-26",
+      "4.26xingqing.mp3": "2026-04-26",
+      "5.10meiguanxi.mp3": "2026-05-10",
+      "5.10xiayutian.mp3": "2026-05-10",
+      "5.17heianqishi.mp3": "2026-05-17",
+      "5.17shashou.mp3": "2026-05-17",
+      "5.17waimiandeshijie.mp3": "2026-05-17",
+      "5.23mihunji.mp3": "2026-05-23",
+      "5.23shiqi.mp3":"2026-05-23",
+      "5.23yangguangzhainan.mp3": "2026-05-23",
+      
+    };
+
+    //获取日期函数
+    function getSongDate(fileName) {
+      const name = fileName.split("/").pop();
+      return songDateMap[name.toLowerCase()] || null;
+    }
+
+    // 根据文件名显示中文歌名
+    function getSongTitle(fileName) {
+      const name = fileName.split("/").pop();
+      const title = songTitleMap[name.toLowerCase()];
+
+      // 有映射就显示中文，没有映射就显示原文件名
+      return title || name.replace(/\.[^.]+$/, "");
+    }
+
+
+    // 按日期分组显示歌曲；没有日期的歌曲归入“未分类”
+    function getArchiveGroup(song) {
+      if (!song.date) return "未分类";
+
+      const match = song.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) return "未分类";
+
+      return `${match[1]} 年 · ${Number(match[2])} 月`;
+    }
+
+    // 只改变列表显示，不改变 supabaseSongs 的播放顺序
+    function renderSongListPage() {
+      const totalPages = Math.max(1, Math.ceil(displaySongs.length / PAGE_SIZE));
+      currentPage = Math.min(Math.max(currentPage, 1), totalPages);
+
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageSongs = displaySongs.slice(start, start + PAGE_SIZE);
+      songList.replaceChildren();
+
+      let currentGroup = "";
+      let groupSongsContainer = null;
+
+      pageSongs.forEach((song, indexOnPage) => {
+        const group = getArchiveGroup(song);
+
+        if (group !== currentGroup) {
+          const groupSection = document.createElement("section");
+          groupSection.className = "archive-group";
+
+          const groupHeading = document.createElement("button");
+          groupHeading.type = "button";
+          groupHeading.className = "archive-group-title";
+          const groupId = `archive-${currentPage}-${indexOnPage}`;
+          groupHeading.setAttribute("aria-controls", groupId);
+          groupHeading.setAttribute("aria-expanded", String(!collapsedArchiveGroups.has(group)));
+
+          const headingText = document.createElement("span");
+          headingText.textContent = group;
+
+          const arrow = document.createElement("span");
+          arrow.className = "archive-group-arrow";
+          arrow.textContent = "⌄";
+          arrow.setAttribute("aria-hidden", "true");
+
+          groupHeading.append(headingText, arrow);
+          groupHeading.addEventListener("click", () => {
+            if (collapsedArchiveGroups.has(group)) {
+              collapsedArchiveGroups.delete(group);
+            } else {
+              collapsedArchiveGroups.add(group);
+            }
+            renderSongListPage();
+          });
+
+          groupSongsContainer = document.createElement("div");
+          groupSongsContainer.className = "archive-group-songs";
+          groupSongsContainer.id = groupId;
+          groupSongsContainer.hidden = collapsedArchiveGroups.has(group);
+
+          groupSection.append(groupHeading, groupSongsContainer);
+          songList.appendChild(groupSection);
+          currentGroup = group;
+        }
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "song-item";
+        button.dataset.songName = song.name;
+
+        if (song.name === activeSongName) button.classList.add("active");
+
+        const icon = document.createElement("span");
+        icon.className = "song-item-icon";
+        icon.textContent = "♫";
+
+        const info = document.createElement("div");
+        info.className = "song-item-info";
+
+        const title = document.createElement("div");
+        title.className = "song-item-name";
+        title.textContent = song.title;
+
+        const subtitle = document.createElement("div");
+        subtitle.className = "song-item-subtitle";
+        subtitle.textContent = song.date
+          ? `${song.date} · Green Room 在线音乐`
+          : "日期未设置 · Green Room 在线音乐";
+
+        info.append(title, subtitle);
+        button.append(icon, info);
+        button.addEventListener("click", () => playSupabaseSong(song));
+        groupSongsContainer.appendChild(button);
+      });
+
+      const activeDisplayIndex = displaySongs.findIndex(song => song.name === activeSongName);
+      playingTrackLocator.hidden = activeDisplayIndex < 0;
+      if (activeDisplayIndex >= 0) {
+        playingTrackLocator.textContent = `定位正在播放：${displaySongs[activeDisplayIndex].title}`;
+      }
+
+      pagination.replaceChildren();
+      if (totalPages <= 1) {
+        pagination.hidden = true;
+      } else {
+        pagination.hidden = false;
+
+        const previousButton = document.createElement("button");
+        previousButton.type = "button";
+        previousButton.className = "pagination-button";
+        previousButton.textContent = "上一页";
+        previousButton.disabled = currentPage === 1;
+        previousButton.addEventListener("click", () => {
+          if (currentPage > 1) {
+            currentPage -= 1;
+            renderSongListPage();
+          }
+        });
+
+        const pageInfo = document.createElement("span");
+        pageInfo.className = "pagination-info";
+        pageInfo.textContent = `第 ${currentPage} / ${totalPages} 页`;
+
+        const nextButton = document.createElement("button");
+        nextButton.type = "button";
+        nextButton.className = "pagination-button";
+        nextButton.textContent = "下一页";
+        nextButton.disabled = currentPage === totalPages;
+        nextButton.addEventListener("click", () => {
+          if (currentPage < totalPages) {
+            currentPage += 1;
+            renderSongListPage();
+          }
+        });
+
+        pagination.append(previousButton, pageInfo, nextButton);
+      }
+    }
+
+    playingTrackLocator.addEventListener("click", () => {
+      const activeDisplayIndex = displaySongs.findIndex(song => song.name === activeSongName);
+      if (activeDisplayIndex < 0) return;
+
+      currentPage = Math.floor(activeDisplayIndex / PAGE_SIZE) + 1;
+      const activeSong = displaySongs[activeDisplayIndex];
+      collapsedArchiveGroups.delete(getArchiveGroup(activeSong));
+      renderSongListPage();
+
+      requestAnimationFrame(() => {
+        const activeButton = Array.from(songList.querySelectorAll(".song-item"))
+          .find(button => button.dataset.songName === activeSongName);
+        if (activeButton) {
+          activeButton.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      });
+    });
+
+    // 获取并显示歌曲列表
+    async function loadSupabaseSongs() {
+      libraryStatus.textContent = "正在连接音乐库……";
+      songList.replaceChildren();
+
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/storage/v1/object/list/${BUCKET_NAME}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": SUPABASE_KEY
+            },
+            body: JSON.stringify({
+              prefix: "",
+              limit: 100,
+              offset: 0,
+              sortBy: {
+                column: "name",
+                order: "asc"
+              }
+            })
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const files = await response.json();
+
+        const audioFiles = files.filter(file => {
+          if (!file.name || file.id == null) return false;
+
+          return /\.(mp3|m4a|aac|wav|ogg|oga|flac|opus|webm)$/i
+            .test(file.name);
+        });
+
+        supabaseSongs = audioFiles.map(file => ({
+            name: file.name,
+            title: getSongTitle(file.name),
+            url: getSongUrl(file.name),
+            date:getSongDate(file.name)
+          }))
+          .sort((a, b) =>
+            a.title.localeCompare(b.title, "zh-CN", {
+              numeric: true,
+              sensitivity: "base"
+            })
+          );
+
+        
+
+        if (supabaseSongs.length === 0) {
+          libraryStatus.textContent =
+            "暂时没有找到音频文件，请检查存储桶中的文件。";
+          return;
+        }
+
+        libraryStatus.textContent =
+          `共 ${supabaseSongs.length} 首歌曲 · 按日期归档`;
+
+        // 列表按日期从新到旧排列；无日期歌曲排在最后。
+        // supabaseSongs 本身仍保留原来的标题排序，避免改变上一首/下一首逻辑。
+        displaySongs = [...supabaseSongs].sort((a, b) => {
+          if (a.date && b.date) {
+            return b.date.localeCompare(a.date) ||
+              a.title.localeCompare(b.title, "zh-CN", {
+                numeric: true,
+                sensitivity: "base"
+              });
+          }
+          if (a.date) return -1;
+          if (b.date) return 1;
+          return a.title.localeCompare(b.title, "zh-CN", {
+            numeric: true,
+            sensitivity: "base"
+          });
+        });
+
+        currentPage = 1;
+        renderSongListPage();
+      } catch (error) {
+        console.error("音乐库加载失败：", error);
+        libraryStatus.textContent =
+          "歌曲列表加载失败，请检查项目配置和网络连接。";
+      }
+    }
+
+    // 播放 Supabase 中的歌曲
+     function playSupabaseSong(song, options = {}) {
+      // 随机模式下，手动选择歌曲就以它为新的起点。
+      // 从随机队列内部切歌时，不重置队列。
+      if (
+        currentPlayMode === "shuffle" &&
+        !options.fromShuffleQueue
+      ) {
+        recordManualShuffleSelection(song);
+      }
+      activeSongName = song.name;
+      currentSongIndex = displaySongs.findIndex(
+        item => item.name === song.name
+      );
+
+      if (currentFileUrl) {
+        URL.revokeObjectURL(currentFileUrl);
+        currentFileUrl = null;
+      }
+
+      audio.src = song.url;
+      audio.load();
+
+      songName.textContent = song.title;
+      artist.textContent = "小心思";
+      fileName.textContent = "正在播放在线音乐：" + song.title;
+
+      cover.textContent = "♫";
+      cover.querySelector("img")?.remove();
+
+      progress.value = 0;
+      currentTime.textContent = "0:00";
+      duration.textContent = "读取时长中…";
+
+      document.querySelectorAll(".song-item").forEach(button => {
+        button.classList.toggle(
+          "active",
+          button.dataset.songName === song.name
+        );
+      });
+
+      audio.play().catch(error => {
+        console.error("播放失败：", error);
+        fileName.textContent =
+          "播放失败，请检查音频 URL 和存储桶权限。";
+      });
+    }
+
+// ===== 播放上一首 =====
+function playPreviousSong() {
+  if (supabaseSongs.length === 0) return;
+
+  // 随机模式：回到已经听过的上一首
+  if (currentPlayMode === "shuffle") {
+    if (shuffleHistoryPosition > 0) {
+      shuffleHistoryPosition--;
+
+      const previousName =
+        shuffleHistory[shuffleHistoryPosition];
+
+      const previousSong = supabaseSongs.find(
+        song => song.name === previousName
+      );
+
+      if (previousSong) {
+        playSupabaseSong(previousSong, {
+          fromShuffleQueue: true
+        });
+      }
+    }
+
+    return;
+  }
+
+  // 顺序模式和单曲循环模式沿用原逻辑
+  const previousIndex =
+    (currentSongIndex - 1 + displaySongs.length)
+    % displaySongs.length;
+
+  playSupabaseSong(displaySongs[previousIndex]);
+}
+
+
+// ===== 播放下一首 =====
+function playNextSong() {
+  if (supabaseSongs.length === 0) return;
+
+  if (currentPlayMode === "shuffle") {
+
+    // 如果刚刚按过上一首，先回到历史中下一首
+    if (
+      shuffleHistoryPosition <
+      shuffleHistory.length - 1
+    ) {
+      shuffleHistoryPosition++;
+
+      const nextHistoryName =
+        shuffleHistory[shuffleHistoryPosition];
+
+      const nextHistorySong = supabaseSongs.find(
+        song => song.name === nextHistoryName
+      );
+
+      if (nextHistorySong) {
+        playSupabaseSong(nextHistorySong, {
+          fromShuffleQueue: true
+        });
+      }
+
+      return;
+    }
+
+    // 本轮队列用完后，重新洗牌
+    if (shuffleUpcoming.length === 0) {
+      refillShuffleUpcoming(activeSongName);
+    }
+
+    // 只有一首歌时，无法做到不重复
+    if (shuffleUpcoming.length === 0) {
+      playSupabaseSong(supabaseSongs[0], {
+        fromShuffleQueue: true
+      });
+      return;
+    }
+
+    // 取出随机队列中的下一首
+    const nextSong = shuffleUpcoming.shift();
+
+    // 丢弃历史中当前位置之后的分支，再记录新播放的歌
+    shuffleHistory = shuffleHistory.slice(
+      0,
+      shuffleHistoryPosition + 1
+    );
+
+    shuffleHistory.push(nextSong.name);
+    shuffleHistoryPosition = shuffleHistory.length - 1;
+
+    playSupabaseSong(nextSong, {
+      fromShuffleQueue: true
+    });
+
+    return;
+  }
+
+  // 顺序模式：保持原来的顺序播放
+  const nextIndex =
+    (currentSongIndex + 1) % displaySongs.length;
+
+  playSupabaseSong(displaySongs[nextIndex]);
+}
+
+
+// ===== 当前歌曲播放结束 =====
+audio.addEventListener("ended", function () {
+
+  // 单曲循环：重新播放当前歌曲
+  if (currentPlayMode === "single") {
+    audio.currentTime = 0;
+
+    audio.play().catch(function (error) {
+      console.error("播放失败：", error);
+    });
+
+    return;
+  }
+
+  // 随机模式和顺序模式都使用对应的下一首逻辑
+  playNextSong();
+});
+
+
+    // 页面打开时自动加载音乐库
+    loadSupabaseSongs();
+
+    audio.addEventListener("error", function () {
+      if (audio.src) {
+        fileName.textContent =
+          "文件无法播放，请尝试选择浏览器支持的音频文件。";
+      }
+    });
+  </script>
+</body>
+</html>
